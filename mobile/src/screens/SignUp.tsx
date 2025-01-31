@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import {
   VStack,
@@ -22,6 +23,7 @@ import { AppError } from "@utils/AppError";
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
 import { ToastMessage } from "@components/ToastMessage";
+import { useAuth } from "@hooks/useAuth";
 
 type FormDataProps = {
   name: string;
@@ -44,9 +46,12 @@ const signUpSchema = yup.object({
 });
 
 export function SignUp() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigation = useNavigation();
 
   const toast = useToast();
+  const { signIn } = useAuth();
 
   const {
     control,
@@ -62,9 +67,11 @@ export function SignUp() {
 
   async function handleSignUp({ name, email, password }: FormDataProps) {
     try {
-      const response = await api.post("/users", { name, email, password });
-      console.log(response.data);
+      setIsLoading(true);
+      await api.post("/users", { name, email, password });
+      await signIn(email, password);
     } catch (error) {
+      setIsLoading(false);
       const isAppError = error instanceof AppError;
       const title = isAppError
         ? error.message
@@ -167,7 +174,11 @@ export function SignUp() {
               )}
             />
 
-            <Button title="Criar conta" onPress={handleSubmit(handleSignUp)} />
+            <Button
+              title="Criar conta"
+              onPress={handleSubmit(handleSignUp)}
+              isLoading={isLoading}
+            />
           </Center>
           <Button
             title="Já tenho uma conta"
