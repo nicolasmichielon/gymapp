@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity } from "react-native";
 import {
   VStack,
@@ -7,24 +8,65 @@ import {
   Text,
   Image,
   Box,
+  useToast,
 } from "@gluestack-ui/themed";
 import { ArrowLeft } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
-
-import { Button } from "@components/Button";
-
-import { AppNavigatorRoutesProps } from "@routes/app.routes";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 import BodySvg from "@assets/body.svg";
 import SeriesSvg from "@assets/series.svg";
 import RepetitionsSvg from "@assets/repetitions.svg";
 
+import { Button } from "@components/Button";
+import { ToastMessage } from "@components/ToastMessage";
+
+import { AppNavigatorRoutesProps } from "@routes/app.routes";
+import { api } from "@services/api";
+import { AppError } from "@utils/AppError";
+import { ExerciseDTO } from "@dtos/exerciseDTO";
+
+type RoutesParamsProps = {
+  exerciseId: string;
+};
+
 export function Exercise() {
+  const [exercise, setExercise] = useState<ExerciseDTO>({} as ExerciseDTO);
   const navigation = useNavigation<AppNavigatorRoutesProps>();
+
+  const route = useRoute();
+  const toast = useToast();
+  const { exerciseId } = route.params as RoutesParamsProps;
 
   function handleGoBack() {
     navigation.goBack();
   }
+
+  async function fetchExerciseDetails() {
+    try {
+      const response = await api.get(`/exercises/${exerciseId}`);
+      setExercise(response.data);
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível carregar os detalhes do exercício.";
+      return toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <ToastMessage
+            id={id}
+            action="error"
+            title={title}
+            onClose={() => toast.close(id)}
+          />
+        ),
+      });
+    }
+  }
+
+  useEffect(() => {
+    fetchExerciseDetails();
+  }, [exerciseId]);
 
   return (
     <VStack flex={1}>
@@ -44,13 +86,13 @@ export function Exercise() {
             fontSize="$lg"
             flexShrink={1}
           >
-            Puxada frontal
+            {exercise.name}
           </Heading>
           <HStack alignItems="center">
             <BodySvg />
 
             <Text color="$gray200" ml="$1" textTransform="capitalize">
-              Costas
+              {exercise.group}
             </Text>
           </HStack>
         </HStack>
@@ -61,17 +103,19 @@ export function Exercise() {
         contentContainerStyle={{ paddingBottom: 32 }}
       >
         <VStack p="$8">
-          <Image
-            source={{
-              uri: "https://i0.wp.com/shapelendario.com.br/wp-content/uploads/2024/03/face-pull-treino-de-bracos-shape-lendario.jpg?resize=474%2C474&ssl=1",
-            }}
-            alt="Exercício"
-            mb="$3"
-            resizeMode="cover"
-            rounded="$lg"
-            w="$full"
-            h="$80"
-          />
+          <Box rounded="$lg" mb="$3" overflow="hidden">
+            <Image
+              source={{
+                uri: `${api.defaults.baseURL}/exercise/demo/${exercise.demo}`,
+              }}
+              alt="Exercício"
+              mb="$3"
+              resizeMode="cover"
+              rounded="$lg"
+              w="$full"
+              h="$80"
+            />
+          </Box>
           <Box bg="$gray600" rounded="$md" pb="$4" px="$4">
             <HStack
               alignItems="center"
@@ -82,14 +126,14 @@ export function Exercise() {
               <HStack>
                 <SeriesSvg />
                 <Text color="$gray200" ml="$2">
-                  3 séries
+                  {exercise.series} séries
                 </Text>
               </HStack>
 
               <HStack>
                 <RepetitionsSvg />
                 <Text color="$gray200" ml="$2">
-                  12 repetições
+                  {exercise.repetitions} repetições
                 </Text>
               </HStack>
             </HStack>
