@@ -12,7 +12,7 @@ import {
 } from "@storage/storageUser";
 
 import { api } from "@services/api";
-import { UserDTO } from "@dtos/UserDTO";
+import { UserDTO } from "@dtos/userDTO";
 
 export type AuthContextDataProps = {
   user: UserDTO;

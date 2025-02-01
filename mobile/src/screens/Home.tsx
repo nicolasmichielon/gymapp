@@ -6,7 +6,7 @@ import { VStack, HStack, Heading, Text, useToast } from "@gluestack-ui/themed";
 
 import { api } from "@services/api";
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
-import { ExerciseDTO } from "@dtos/exerciseDTO";
+import { ExerciseDTO } from "@dtos/ExerciseDTO";
 
 import { HomeHeader } from "@components/HomeHeader";
 import { Group } from "@components/Group";
