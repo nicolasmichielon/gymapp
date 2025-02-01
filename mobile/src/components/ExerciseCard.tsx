@@ -1,3 +1,4 @@
+import { TouchableOpacity, TouchableOpacityProps } from "react-native";
 import {
   HStack,
   Image,
@@ -6,13 +7,17 @@ import {
   Text,
   Icon,
 } from "@gluestack-ui/themed";
-import { TouchableOpacity, TouchableOpacityProps } from "react-native";
-
 import { ChevronRight } from "lucide-react-native";
 
-type Props = TouchableOpacityProps & {};
+import { api } from "@services/api";
 
-export function ExerciseCard({ ...rest }: Props) {
+import { ExerciseDTO } from "@dtos/exerciseDTO";
+
+type Props = TouchableOpacityProps & {
+  data: ExerciseDTO;
+};
+
+export function ExerciseCard({ data, ...rest }: Props) {
   return (
     <TouchableOpacity {...rest}>
       <HStack
@@ -25,7 +30,7 @@ export function ExerciseCard({ ...rest }: Props) {
       >
         <Image
           source={{
-            uri: "https://i0.wp.com/shapelendario.com.br/wp-content/uploads/2024/03/face-pull-treino-de-bracos-shape-lendario.jpg?resize=474%2C474&ssl=1",
+            uri: `${api.defaults.baseURL}/exercise/thumb/${data.thumb}`,
           }}
           alt="Imagem do exercício"
           w="$16"
@@ -36,12 +41,14 @@ export function ExerciseCard({ ...rest }: Props) {
         />
         <VStack flex={1}>
           <Heading fontSize="$lg" color="$white" fontFamily="$heading">
-            Puxada frontal
+            {data.name}
           </Heading>
+
           <Text fontSize="$sm" color="$gray200" mt="$1" numberOfLines={2}>
-            3 séries x 12 repetições
+            {data.series} séries x {data.repetitions} repetições
           </Text>
         </VStack>
+
         <Icon as={ChevronRight} color="$gray300" />
       </HStack>
     </TouchableOpacity>
