@@ -19,17 +19,20 @@ import RepetitionsSvg from "@assets/repetitions.svg";
 
 import { Button } from "@components/Button";
 import { ToastMessage } from "@components/ToastMessage";
+import { Loading } from "@components/Loading";
 
 import { AppNavigatorRoutesProps } from "@routes/app.routes";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
-import { ExerciseDTO } from "@dtos/exerciseDTO";
+import { ExerciseDTO } from "@dtos/ExerciseDTO";
 
 type RoutesParamsProps = {
   exerciseId: string;
 };
 
 export function Exercise() {
+  const [sendingRegister, setSendingRegister] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [exercise, setExercise] = useState<ExerciseDTO>({} as ExerciseDTO);
   const navigation = useNavigation<AppNavigatorRoutesProps>();
 
@@ -43,6 +46,7 @@ export function Exercise() {
 
   async function fetchExerciseDetails() {
     try {
+      setIsLoading(true);
       const response = await api.get(`/exercises/${exerciseId}`);
       setExercise(response.data);
     } catch (error) {
@@ -53,14 +57,41 @@ export function Exercise() {
       return toast.show({
         placement: "top",
         render: ({ id }) => (
-          <ToastMessage
-            id={id}
-            action="error"
-            title={title}
-            onClose={() => toast.close(id)}
-          />
+          <ToastMessage id={id} action="error" title={title} />
         ),
       });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleExerciseHistoryRegister() {
+    try {
+      setSendingRegister(true);
+
+      await api.post("/history", { exercise_id: exerciseId });
+      const title = "Parabéns! Exercício registrado no seu histórico.";
+      toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <ToastMessage id={id} title={title} action="success" />
+        ),
+      });
+
+      navigation.navigate("history");
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível registrar o exerício";
+      return toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <ToastMessage id={id} action="error" title={title} />
+        ),
+      });
+    } finally {
+      setSendingRegister(false);
     }
   }
 
@@ -98,50 +129,58 @@ export function Exercise() {
         </HStack>
       </VStack>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
-      >
-        <VStack p="$8">
-          <Box rounded="$lg" mb="$3" overflow="hidden">
-            <Image
-              source={{
-                uri: `${api.defaults.baseURL}/exercise/demo/${exercise.demo}`,
-              }}
-              alt="Exercício"
-              mb="$3"
-              resizeMode="cover"
-              rounded="$lg"
-              w="$full"
-              h="$80"
-            />
-          </Box>
-          <Box bg="$gray600" rounded="$md" pb="$4" px="$4">
-            <HStack
-              alignItems="center"
-              justifyContent="space-around"
-              mb="$6"
-              mt="$5"
-            >
-              <HStack>
-                <SeriesSvg />
-                <Text color="$gray200" ml="$2">
-                  {exercise.series} séries
-                </Text>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          <VStack p="$8">
+            <Box rounded="$lg" mb="$3" overflow="hidden">
+              <Image
+                source={{
+                  uri: `${api.defaults.baseURL}/exercise/demo/${exercise.demo}`,
+                }}
+                alt="Exercício"
+                mb="$3"
+                resizeMode="cover"
+                rounded="$lg"
+                w="$full"
+                h="$80"
+              />
+            </Box>
+            <Box bg="$gray600" rounded="$md" pb="$4" px="$4">
+              <HStack
+                alignItems="center"
+                justifyContent="space-around"
+                mb="$6"
+                mt="$5"
+              >
+                <HStack>
+                  <SeriesSvg />
+                  <Text color="$gray200" ml="$2">
+                    {exercise.series} séries
+                  </Text>
+                </HStack>
+
+                <HStack>
+                  <RepetitionsSvg />
+                  <Text color="$gray200" ml="$2">
+                    {exercise.repetitions} repetições
+                  </Text>
+                </HStack>
               </HStack>
 
-              <HStack>
-                <RepetitionsSvg />
-                <Text color="$gray200" ml="$2">
-                  {exercise.repetitions} repetições
-                </Text>
-              </HStack>
-            </HStack>
-
-            <Button title="Marcar como realizado" />
-          </Box>
-        </VStack>
-      </ScrollView>
+              <Button
+                title="Marcar como realizado"
+                isLoading={sendingRegister}
+                onPress={handleExerciseHistoryRegister}
+              />
+            </Box>
+          </VStack>
+        </ScrollView>
+      )}
     </VStack>
   );
 }

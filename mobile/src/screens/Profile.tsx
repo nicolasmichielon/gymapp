@@ -47,7 +47,6 @@ export function Profile() {
                 id={id}
                 action="error"
                 title="Essa imagem é muito grande. Escolha uma de até 5MB."
-                onClose={() => toast.close(id)}
               />
             ),
           });

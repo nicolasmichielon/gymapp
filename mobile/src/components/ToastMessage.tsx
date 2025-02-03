@@ -2,19 +2,14 @@ import {
   ToastDescription,
   ToastTitle,
   Toast,
-  Pressable,
-  Icon,
-  VStack,
+  HStack,
 } from "@gluestack-ui/themed";
-
-import { X } from "lucide-react-native";
 
 type Props = {
   id: string;
   title: string;
   description?: string;
   action?: "error" | "success";
-  onClose: () => void;
 };
 
 export function ToastMessage({
@@ -22,7 +17,6 @@ export function ToastMessage({
   title,
   description,
   action = "success",
-  onClose,
 }: Props) {
   return (
     <Toast
@@ -31,10 +25,7 @@ export function ToastMessage({
       bgColor={action === "success" ? "$green500" : "$red500"}
       mt="$10"
     >
-      <VStack space="xs" w="$full">
-        <Pressable alignSelf="flex-end" onPress={onClose}>
-          <Icon as={X} color="$coolGray50" size="md" />
-        </Pressable>
+      <HStack space="xs" w="$full">
         <ToastTitle color="$white" fontFamily="$heading">
           {title}
         </ToastTitle>
@@ -43,7 +34,7 @@ export function ToastMessage({
             {description}
           </ToastDescription>
         )}
-      </VStack>
+      </HStack>
     </Toast>
   );
 }

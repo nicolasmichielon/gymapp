@@ -80,12 +80,7 @@ export function SignUp() {
       toast.show({
         placement: "top",
         render: ({ id }) => (
-          <ToastMessage
-            id={id}
-            action="error"
-            title={title}
-            onClose={() => toast.close(id)}
-          />
+          <ToastMessage id={id} action="error" title={title} />
         ),
       });
     }
