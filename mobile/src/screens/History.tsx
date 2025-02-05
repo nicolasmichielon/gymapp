@@ -11,6 +11,7 @@ import { AppError } from "@utils/AppError";
 import { ScreenHeader } from "@components/ScreenHeader";
 import { HistoryCard } from "@components/HistoryCard";
 import { ToastMessage } from "@components/ToastMessage";
+import { Loading } from "@components/Loading";
 
 export function History() {
   const [isLoading, setIsLoading] = useState(true);
@@ -50,10 +51,14 @@ export function History() {
     <VStack flex={1}>
       <ScreenHeader title="Histórico de Exercícios" />
 
-      <SectionList
-        sections={exercises}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <HistoryCard data={item} />}
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <SectionList
+          sections={exercises}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <HistoryCard data={item} />}
+
         renderSectionHeader={({ section }) => (
           <Heading
             fontFamily="$heading"
@@ -77,6 +82,9 @@ export function History() {
         )}
         showsVerticalScrollIndicator={false}
       />
+      )}  
     </VStack>
   );
+
+
 }
